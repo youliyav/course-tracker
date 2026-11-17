@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Трекер курса · 19 спринтов</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    background:#ffffff;color:#000000;line-height:1.4;padding:40px;
+  }
+  .container{max-width:1400px;margin:0 auto}
+  header{border-bottom:4px solid #000000;padding-bottom:32px;margin-bottom:40px}
+  h1{
+    font-size:72px;font-weight:900;text-transform:uppercase;
+    letter-spacing:-0.02em;line-height:0.9;margin-bottom:16px;
+  }
+  .sub{
+    font-size:18px;font-weight:400;text-transform:uppercase;
+    letter-spacing:0.05em;color:#000;margin-bottom:32px;
+  }
+  .stats{
+    display:grid;grid-template-columns:repeat(6,1fr);gap:0;
+    border:2px solid #000;margin-bottom:32px;
+  }
+  .stat{padding:24px;border-right:2px solid #000}
+  .stat:last-child{border-right:none}
+  .stat b{display:block;font-size:48px;font-weight:900;line-height:1;margin-bottom:8px}
+  .stat span{font-size:11px;text-transform:uppercase;letter-spacing:0.1em;font-weight:700}
+  .stat:nth-child(1) b,.stat:nth-child(3) b,.stat:nth-child(5) b{color:#D92D20}
+  .stat:nth-child(2) b,.stat:nth-child(4) b,.stat:nth-child(6) b{color:#1D3557}
+  .progress-container{margin-bottom:32px}
+  .progress-label{
+    display:flex;justify-content:space-between;margin-bottom:12px;
+    font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;
+  }
+  .bar{height:24px;background:#f0f0f0;border:2px solid #000;position:relative}
+  .bar i{display:block;height:100%;width:0;background:#D92D20}
+  .tools{
+    display:flex;flex-wrap:wrap;gap:16px;align-items:center;
+    padding:20px;background:#F4D35E;border:2px solid #000;
+    font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;
+  }
+  button{
+    font:inherit;font-size:13px;font-weight:900;
+    text-transform:uppercase;letter-spacing:0.05em;
+    padding:12px 24px;border:2px solid #000;
+    background:#ffffff;color:#000;cursor:pointer;
+  }
+  button:hover{background:#000;color:#fff}
+  main{margin-bottom:40px}
+  .module{
+    font-size:32px;font-weight:900;text-transform:uppercase;
+    letter-spacing:-0.01em;margin:48px 0 24px;
+    padding:16px 0;border-top:4px solid #000;border-bottom:2px solid #000;
+  }
+  .module:nth-of-type(1){color:#D92D20}
+  .module:nth-of-type(2){color:#1D3557}
+  .module:nth-of-type(3){color:#D92D20}
+  .row{
+    display:grid;grid-template-columns:320px 1fr auto;gap:24px;align-items:center;
+    border:2px solid #000;padding:24px;margin-bottom:16px;background:#ffffff;
+  }
+  .row:nth-child(even){background:#fafafa}
+  .info{display:flex;flex-direction:column;gap:8px}
+  .num{font-size:24px;font-weight:900;text-transform:uppercase;display:flex;align-items:center;gap:12px}
+  .tag{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0.1em;padding:6px 12px}
+  .tag.practice{background:#1D3557;color:#fff}
+  .tag.project{background:#F4D35E;color:#000}
+  .tag.diploma{background:#D92D20;color:#fff}
+  .tag.optional{background:#000;color:#fff}
+  .ttl{font-size:16px;font-weight:500}
+  .rng{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#666}
+  .days{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+  .day{
+    position:relative;width:64px;height:64px;
+    border:2px solid #000;background:#ffffff;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;user-select:none;
+  }
+  .day .wd{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0.1em}
+  .day .dt{font-size:20px;font-weight:900}
+  .day.start{border-left:6px solid #1D3557}
+  .day.start::before{
+    content:"СТАРТ";position:absolute;top:-12px;left:0;
+    font-size:8px;font-weight:900;letter-spacing:0.1em;
+    background:#1D3557;color:#fff;padding:2px 8px;
+  }
+  .day.last{border-right:6px solid #D92D20}
+  .day.last::after{
+    content:"ДЕДЛАЙН";position:absolute;bottom:-12px;right:0;
+    font-size:8px;font-weight:900;letter-spacing:0.05em;
+    background:#D92D20;color:#fff;padding:2px 8px;
+  }
+  .day.hol .dt::after{content:"•";color:#D92D20;margin-left:2px}
+  .day.today{border:4px solid #F4D35E}
+  .day.s1{background:#000;color:#fff}
+  .day.s1 .wd{color:#999}
+  .day.s2{background:repeating-linear-gradient(45deg,#fff,#fff 8px,#000 8px,#000 10px);color:#000}
+  .day.s2 .dt{text-decoration:line-through;text-decoration-thickness:3px}
+  .day.past{opacity:0.5}
+  .opt-row{border-style:dashed}
+  .submit{
+    padding:12px 20px;font-size:12px;font-weight:900;
+    text-transform:uppercase;letter-spacing:0.05em;
+    border:2px solid #000;background:#ffffff;color:#000;
+    cursor:pointer;white-space:nowrap;
+  }
+  .submit.on{background:#1D3557;border-color:#1D3557;color:#fff}
+  footer{
+    border-top:4px solid #000;padding-top:24px;
+    font-size:13px;font-weight:700;text-transform:uppercase;
+    letter-spacing:0.05em;line-height:1.6;
+  }
+  .sync-info{
+    margin-top:16px;padding:16px;background:#f0f0f0;border:2px solid #000;
+    font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;
+  }
+  input[type="file"]{display:none}
+  @media print{
+    body{padding:20px}
+    .tools,button.submit{display:none}
+    .row{break-inside:avoid}
+  }
+  @media(max-width:1000px){
+    .row{grid-template-columns:1fr;gap:16px}
+    .stats{grid-template-columns:repeat(3,1fr)}
+    .stat:nth-child(3){border-right:none}
+    .stat:nth-child(4){border-top:2px solid #000}
+    h1{font-size:48px}
+  }
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+  <h1>Курс<br>19 спринтов</h1>
+  <div class="sub">Финиш 26.03.2027 · 10 часов в неделю · пн–пт</div>
+  <div class="stats" id="stats"></div>
+  <div class="progress-container">
+    <div class="progress-label">
+      <span>Прогресс</span>
+      <span id="progress-text">0%</span>
+    </div>
+    <div class="bar"><i id="fill"></i></div>
+  </div>
+  <div class="tools">
+    <span>Клик — сделано · Ещё клик — пропуск · Третий — сброс</span>
+    <button onclick="window.print()">Печать</button>
+    <button onclick="exportProgress()">Экспорт</button>
+    <button onclick="document.getElementById('import-file').click()">Импорт</button>
+    <input type="file" id="import-file" accept=".json" onchange="importProgress(event)">
+    <button id="reset">Сброс</button>
+  </div>
+  <div class="sync-info">
+    Прогресс сохраняется в браузере этого устройства. Чтобы перенести на другое — нажми «Экспорт», сохрани файл, на новом устройстве открой трекер и нажми «Импорт».
+  </div>
+</header>
+<main id="plan"></main>
+<footer>
+  27.03.2027 — последний день доступа · Спринт 11 — резерв
+</footer>
+</div>
+
+<script>
+const END = '2027-03-27';
+const MODULES = {1:'Модуль 1. Архитектура ИС и основы Linux',2:'Модуль 2. Администрирование Linux',3:'Модуль 3. Администрирование Windows'};
+const SPRINTS = [
+ {n:1,m:1,t:'Практика без ревью',s:'2026-11-16',d:5,k:'practice'},
+ {n:2,m:1,t:'Практика без ревью',s:'2026-11-23',d:5,k:'practice'},
+ {n:3,m:1,t:'Проект №1',s:'2026-11-30',d:5,k:'project'},
+ {n:4,m:1,t:'Проект №2',s:'2026-12-07',d:5,k:'project'},
+ {n:5,m:1,t:'Проект №3',s:'2026-12-14',d:5,k:'project'},
+ {n:6,m:1,t:'Проект №4',s:'2026-12-21',d:5,k:'project'},
+ {n:7,m:2,t:'Проект №5',s:'2026-12-28',d:5,k:'project'},
+ {n:8,m:2,t:'Проект №6',s:'2027-01-04',d:5,k:'project'},
+ {n:9,m:2,t:'Проект №7',s:'2027-01-11',d:5,k:'project'},
+ {n:10,m:2,t:'Проекты №8–9 (двойной)',s:'2027-01-18',d:5,k:'project'},
+ {n:11,m:2,t:'Проект №10 · необязательный / резерв',s:'2027-01-25',d:5,k:'optional'},
+ {n:12,m:2,t:'Дипломная работа №11',s:'2027-02-01',d:5,k:'diploma'},
+ {n:13,m:3,t:'Проект №12',s:'2027-02-08',d:5,k:'project'},
+ {n:14,m:3,t:'Проект №13',s:'2027-02-15',d:5,k:'project'},
+ {n:15,m:3,t:'Проект №14',s:'2027-02-22',d:5,k:'project'},
+ {n:16,m:3,t:'Проект №15',s:'2027-03-01',d:5,k:'project'},
+ {n:17,m:3,t:'Проект №16',s:'2027-03-08',d:5,k:'project'},
+ {n:18,m:3,t:'Проект №17',s:'2027-03-15',d:5,k:'project'},
+ {n:19,m:3,t:'Дипломная работа',s:'2027-03-22',d:5,k:'diploma'}
+];
+const HOLIDAYS = ['2027-01-01','2027-01-04','2027-01-05','2027-01-06','2027-01-07','2027-01-08','2027-02-23','2027-03-08'];
+const WD = ['вс','пн','вт','ср','чт','пт','сб'];
+const KEY = 'course-tracker-v1';
+
+const iso = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+const parse = s => {const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d);};
+const fmt = s => {const d=parse(s);return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0');};
+
+const now = new Date();
+const todayISO = iso(now);
+let state = JSON.parse(localStorage.getItem(KEY) || '{"days":{},"sprints":{}}');
+const save = () => localStorage.setItem(KEY, JSON.stringify(state));
+
+const allDays = [];
+const plan = document.getElementById('plan');
+let curModule = 0;
+
+SPRINTS.forEach(sp => {
+  if (sp.m !== curModule) {
+    curModule = sp.m;
+    const h = document.createElement('div'); h.className='module'; h.textContent = MODULES[sp.m]; plan.appendChild(h);
+  }
+  const dates = [];
+  for (let i=0;i<sp.d;i++){ const d=parse(sp.s); d.setDate(d.getDate()+i); dates.push(iso(d)); }
+  allDays.push(...dates);
+  const deadline = dates[dates.length-1];
+
+  const row = document.createElement('div');
+  row.className = 'row' + (sp.k==='optional' ? ' opt-row' : '');
+  const tagName = sp.k==='diploma' ? 'диплом' : sp.k==='optional' ? 'резерв' : sp.k==='practice' ? 'практика' : 'проект';
+  row.innerHTML = `<div class="info">
+      <div class="num">Спринт ${sp.n}<span class="tag ${sp.k}">${tagName}</span></div>
+      <div class="ttl">${sp.t}</div>
+      <div class="rng">${fmt(sp.s)} → ${fmt(deadline)} · ${sp.d*2}ч</div>
+    </div><div class="days"></div>
+    <button class="submit" data-sp="${sp.n}">Сдать</button>`;
+  const box = row.querySelector('.days');
+
+  dates.forEach((ds,i) => {
+    const d = parse(ds);
+    const cell = document.createElement('div');
+    cell.className = 'day' + (i===0?' start':'') + (i===dates.length-1?' last':'')
+      + (HOLIDAYS.includes(ds)?' hol':'') + (ds===todayISO?' today':'') + (ds<todayISO?' past':'');
+    cell.dataset.d = ds;
+    cell.title = fmt(ds)+' · 2 часа';
+    cell.innerHTML = `<span class="wd">${WD[d.getDay()]}</span><span class="dt">${d.getDate()}.${String(d.getMonth()+1).padStart(2,'0')}</span>`;
+    const st = state.days[ds] || 0;
+    if (st) cell.classList.add('s'+st);
+    cell.onclick = () => {
+      const next = ((state.days[ds]||0)+1)%3;
+      cell.classList.remove('s1','s2');
+      if (next) { state.days[ds]=next; cell.classList.add('s'+next); } else delete state.days[ds];
+      save(); stats();
+    };
+    box.appendChild(cell);
+  });
+
+  const btn = row.querySelector('.submit');
+  if (state.sprints[sp.n]) { btn.classList.add('on'); btn.textContent='Сдано'; }
+  btn.onclick = () => {
+    state.sprints[sp.n] = !state.sprints[sp.n];
+    btn.classList.toggle('on', state.sprints[sp.n]);
+    btn.textContent = state.sprints[sp.n] ? 'Сдано' : 'Сдать';
+    save(); stats();
+  };
+  plan.appendChild(row);
+});
+
+function stats(){
+  const ms = parse(END) - parse(todayISO);
+  const left = Math.max(0, Math.round(ms/86400000));
+  const remain = allDays.filter(d => d >= todayISO).length;
+  const done = allDays.filter(d => state.days[d]===1).length;
+  const skipped = allDays.filter(d => state.days[d]===2).length;
+  const spDone = SPRINTS.filter(s => state.sprints[s.n]).length;
+  const percent = Math.round(done/allDays.length*100);
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><b>${left}</b><span>Дней до финиша</span></div>
+    <div class="stat"><b>${remain}</b><span>Учебных дней</span></div>
+    <div class="stat"><b>${remain*2}</b><span>Часов впереди</span></div>
+    <div class="stat"><b>${done}/95</b><span>Выполнено</span></div>
+    <div class="stat"><b>${spDone}/19</b><span>Спринтов сдано</span></div>
+    <div class="stat"><b>${skipped}</b><span>Пропусков</span></div>`;
+  document.getElementById('fill').style.width = percent+'%';
+  document.getElementById('progress-text').textContent = percent+'%';
+}
+
+function exportProgress(){
+  const data = JSON.stringify(state, null, 2);
+  const blob = new Blob([data], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'course-progress-' + todayISO + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importProgress(event){
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (!imported.days || !imported.sprints) throw new Error('Неверный формат');
+      if (!confirm('Заменить текущий прогресс данными из файла?')) return;
+      state = imported;
+      save();
+      location.reload();
+    } catch(err) {
+      alert('Ошибка: файл не содержит данных прогресса');
+    }
+  };
+  reader.readAsText(file);
+}
+
+document.getElementById('reset').onclick = () => {
+  if (!confirm('Сбросить все отметки?')) return;
+  state = {days:{},sprints:{}}; save(); location.reload();
+};
+stats();
+</script>
+</body>
+</html>
